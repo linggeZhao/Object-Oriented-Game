@@ -106,21 +106,62 @@ void drawBackpack(float x, float y, float width, float height) {
 }
 
 void drawBackpackScreen() {
-  // Draw backpack screen content
-  background(200);
-  fill(0);
-  textSize(24);
+  // Set the background color to black
+  background(0);
+
+  // Display guns
+  drawGun(50, 50, "Gun 1");
+  drawGun(50, 150, "Gun 2");
+
+  // Display scopes
+  drawScope(200, 50, "Scope A");
+  drawScope(200, 150, "Scope B");
+
+  // Display blue and green targets
+  drawTarget(350, 50, color(0, 0, 255)); // Blue target
+  drawTarget(350, 150, color(0, 255, 0)); // Green target
+
+  // Add labels for each category
+  fill(255);
+  textSize(20);
+  textAlign(LEFT, CENTER);
+  text("Guns:", 20, 20);
+  text("Scopes:", 170, 20);
+  text("Targets:", 320, 20);
+}
+
+void drawGun(float x, float y, String gunName) {
+  // Draw gun representation
+  fill(150);
+  rect(x, y, 80, 40);
+  fill(200);
+  rect(x + 10, y + 10, 60, 20);
+
+  // Display gun name
+  fill(255);
   textAlign(CENTER, CENTER);
-  text("Backpack", width / 2, 30);
+  textSize(12);
+  text(gunName, x + 40, y + 20);
+}
 
-  // Display gun and scope information in the backpack screen
-  text("Gun Type: " + sniperRifle.getType(), width / 2, height / 2 - 40);
-  text("Scope Type: " + sniperRifle.getScopeType(), width / 2, height / 2 - 10);
+void drawScope(float x, float y, String scopeName) {
+  // Draw scope representation
+  fill(100, 200, 100);
+  ellipse(x + 20, y + 20, 40, 40);
+  fill(150, 255, 150);
+  ellipse(x + 20, y + 20, 30, 30);
 
-  // Draw the backpack icon in the backpack screen
-  drawBackpack(backpackIconPosition.x, backpackIconPosition.y, 40, 60);
+  // Display scope name
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(12);
+  text(scopeName, x + 20, y + 50);
+}
 
-  text("Click anywhere to close the backpack", width / 2, height - 30);
+void drawTarget(float x, float y, color targetColor) {
+  // Draw target representation
+  fill(targetColor);
+  ellipse(x + 20, y + 20, 40, 40);
 }
 
 void mousePressed() {
