@@ -65,22 +65,29 @@ void draw() {
     textAlign(CENTER, CENTER);
     if (gameEnded) {
       if (scoreboard.getScore() >= maxSimultaneousTargets) {
-        text("You win!", width / 2, height / 2);
+        text("You win! Click to start", width / 2, height / 2);
       } else {
-        text("Game over", width / 2, height / 2);
+        text("Game over. Click to start", width / 2, height / 2);
       }
       cursor(); // Show the mouse cursor when the game ends
     } else {
       text("Click to start", width / 2, height / 2);
+      
+      // Draw the backpack icon in the start interface
+      drawBackpack(backpackIconPosition.x, backpackIconPosition.y, 40, 60);
     }
-
-    // Draw the backpack icon in the start interface
-    drawBackpack(backpackIconPosition.x, backpackIconPosition.y, 40, 60);
   }
 
   if (inBackpack) {
     // Draw backpack screen
     drawBackpackScreen();
+  }
+
+  // Show or hide cursor based on game state and time
+  if (gameRunning && timeLeft > 0) {
+    noCursor(); // Hide the mouse cursor when running the game and time remaining
+  } else {
+    cursor(); // Show the mouse cursor in other cases
   }
 }
 
@@ -110,14 +117,14 @@ void drawBackpackScreen() {
   background(0);
 
   // Display guns
-  drawGun(50, 50, "Gun 1");
-  drawGun(50, 150, "Gun 2");
+  drawText(50, 50, "Sniper Rifle");
+  drawText(50, 150, "Submachine Gun");
 
   // Display scopes
-  drawScope(200, 50, "Scope A");
-  drawScope(200, 150, "Scope B");
+  drawText(200, 50, "Scope A");
+  drawText(200, 150, "Scope B");
 
-  // Display blue and green targets
+  // Display blue and green targets as circles
   drawTarget(350, 50, color(0, 0, 255)); // Blue target
   drawTarget(350, 150, color(0, 255, 0)); // Green target
 
@@ -130,38 +137,18 @@ void drawBackpackScreen() {
   text("Targets:", 320, 20);
 }
 
-void drawGun(float x, float y, String gunName) {
-  // Draw gun representation
-  fill(150);
-  rect(x, y, 80, 40);
-  fill(200);
-  rect(x + 10, y + 10, 60, 20);
-
-  // Display gun name
+void drawText(float x, float y, String text) {
+  // Draw text representation
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(12);
-  text(gunName, x + 40, y + 20);
-}
-
-void drawScope(float x, float y, String scopeName) {
-  // Draw scope representation
-  fill(100, 200, 100);
-  ellipse(x + 20, y + 20, 40, 40);
-  fill(150, 255, 150);
-  ellipse(x + 20, y + 20, 30, 30);
-
-  // Display scope name
-  fill(255);
-  textAlign(CENTER, CENTER);
-  textSize(12);
-  text(scopeName, x + 20, y + 50);
+  text(text, x, y);
 }
 
 void drawTarget(float x, float y, color targetColor) {
-  // Draw target representation
+  // Draw target representation as a circle
   fill(targetColor);
-  ellipse(x + 20, y + 20, 40, 40);
+  ellipse(x, y, 40, 40);
 }
 
 void mousePressed() {
@@ -174,17 +161,21 @@ void mousePressed() {
     inBackpack = false;
     cursor(); // Show the mouse cursor when leaving the backpack
   } else if (mouseX > backpackX && mouseX < backpackX + backpackWidth &&
-    mouseY > backpackY && mouseY < backpackY + backpackHeight) {
-    if (!gameRunning) {
-      if (gameEnded) {
-        startGame();
-      } else {
-        inBackpack = true;
-        noCursor(); // Hide the mouse cursor when in the backpack
-      }
+    mouseY > backpackY && mouseY < backpackY + backpackHeight && !gameRunning) {
+    inBackpack = true;
+    noCursor(); // Hide the mouse cursor when in the backpack
+  } else if (!gameRunning || gameEnded) {
+    // If the game is not running or has ended, clicking resets the game
+    gameRunning = true;
+    gameEnded = false;
+    timeLeft = 15 * 60;
+    targets.clear();
+    for (int i = 0; i < maxSimultaneousTargets; i++) {
+      targets.add(new Target());
     }
-  } else if (!gameRunning) {
-    startGame();
+    targetsHit = 0;
+    scoreboard.reset();
+    noCursor();
   } else {
     for (Target target : targets) {
       if (target.hit(mouseX, mouseY)) {
@@ -193,6 +184,12 @@ void mousePressed() {
         target.reset();
       }
     }
+  }
+
+  // Check if the game is not running or has ended to reset the game state
+  if (!gameRunning || gameEnded) {
+    gameRunning = false;
+    gameEnded = false;
   }
 }
 
@@ -215,4 +212,10 @@ void endGame() {
   gameRunning = false;
   gameEnded = true;
   cursor();
+}
+
+void restartGame() {
+  gameRunning = false;
+  gameEnded = false;
+  startGame();
 }
