@@ -1,23 +1,24 @@
+// Variables to set up screen dimensions and game parameters
 int screenWidth = 400;
 int screenHeight = 400;
+int maxSimultaneousTargets = 5; // Maximum number of targets visible at the same time
+ArrayList<Target> targets; // List to store target instances
+Gun sniperRifle; // Instance of the gun
+Scoreboard scoreboard; // Instance to manage game score
+boolean gameRunning = false; // Flag to indicate if the game is running
+int timeLeft = 15 * 60; // Initial time limit (15 seconds)
+boolean gameEnded = false; // Flag to indicate if the game has ended
+int targetsHit = 0; // Counter to keep track of the number of targets hit
+boolean inBackpack = false; // Flag to indicate if the backpack interface is open
 
-int maxSimultaneousTargets = 5;
-ArrayList<Target> targets;
-Gun sniperRifle;
-Scoreboard scoreboard;
-boolean gameRunning = false;
-int timeLeft = 15 * 60; // 15 seconds
-boolean gameEnded = false;
-int targetsHit = 0;
-boolean inBackpack = false;
-
-PVector backpackIconPosition; // Declare backpackIconPosition
+PVector backpackIconPosition; // Variable to store the backpack icon's position
 
 void settings() {
   size(screenWidth, screenHeight);
 }
 
 void setup() {
+  // Initialize arrays and game objects
   targets = new ArrayList<Target>();
   sniperRifle = new Gun("Default Rifle", "Default Scope");
   scoreboard = new Scoreboard();
@@ -25,12 +26,16 @@ void setup() {
 
   // Initialize the backpack icon position
   backpackIconPosition = new PVector(width - 50, 25);
+
+  // Generate initial targets
+  for (int i = 0; i < maxSimultaneousTargets; i++) {
+    targets.add(new Target());
+  }
 }
 
 void draw() {
-  // Draw the background gradient from pink to orange
+  // Background gradient from pink to orange
   for (int y = 0; y < height; y++) {
-    // Calculate a color between pink and orange based on y-coordinate
     float inter = map(y, 0, height, 0, 1);
     color c = lerpColor(color(255, 192, 203), color(255, 165, 0), inter);
     stroke(c);
@@ -41,7 +46,7 @@ void draw() {
     timeLeft--;
 
     if (timeLeft <= 0) {
-      endGame(); // Trigger endGame when time runs out
+      endGame(); // End the game when time runs out
     } else {
       if (targetsHit >= maxSimultaneousTargets) {
         // Generate a new set of targets if all current targets are hit
@@ -52,7 +57,9 @@ void draw() {
         targetsHit = 0;
       }
 
+      // Display and move the targets
       for (Target target : targets) {
+        target.move();
         target.display();
       }
 
@@ -60,6 +67,7 @@ void draw() {
       scoreboard.display();
     }
   } else {
+    // Display game start or end messages
     fill(0);
     textSize(32);
     textAlign(CENTER, CENTER);
@@ -72,27 +80,27 @@ void draw() {
       cursor(); // Show the mouse cursor when the game ends
     } else {
       text("Click to start", width / 2, height / 2);
-      
+
       // Draw the backpack icon in the start interface
       drawBackpack(backpackIconPosition.x, backpackIconPosition.y, 40, 60);
     }
   }
 
+  // Display backpack interface if opened
   if (inBackpack) {
-    // Draw backpack screen
     drawBackpackScreen();
   }
 
   // Show or hide cursor based on game state and time
   if (gameRunning && timeLeft > 0) {
-    noCursor(); // Hide the mouse cursor when running the game and time remaining
+    noCursor(); // Hide the mouse cursor during the game
   } else {
-    cursor(); // Show the mouse cursor in other cases
+    cursor(); // Show the mouse cursor at other times
   }
 }
 
 void drawBackpack(float x, float y, float width, float height) {
-  // Draw a simple representation of a backpack using basic shapes
+  // Draw a representation of a backpack using basic shapes
   fill(100, 100, 100);
   rect(x, y, width, height);
   fill(150, 150, 150);
